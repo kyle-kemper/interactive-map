@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Leaflet US Map Test</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Leaflet U.S. Map Test</h2>
+<div id="map"></div>
+
+<script>
+    // Create map centered on the US
+    const map = L.map('map').setView([39.5, -98.35], 4);
+
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+    }).addTo(map);
+
+    // Custom marker icon function
+    function coloredIcon(color) {
+        return new L.Icon({
+            iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+            shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+    }
+
+    // Categories → Colors
+    const categories = {
+        restaurants: coloredIcon("red"),
+        parks: coloredIcon("green"),
+        museums: coloredIcon("blue")
+    };
+
+    // Example pins
+    const pins = [
+        { name: "Best BBQ", category: "restaurants", coords: [32.7767, -96.7970] },
+        { name: "Central Park", category: "parks", coords: [40.7851, -73.9683] },
+        { name: "Smithsonian", category: "museums", coords: [38.8977, -77.0365] }
+    ];
+
+    // Add pins to map
+    pins.forEach(pin => {
+        L.marker(pin.coords, { icon: categories[pin.category] })
+            .addTo(map)
+            .bindPopup(`<strong>${pin.name}</strong><br>Category: ${pin.category}`);
+    });
+</script>
+
+</body>
+</html>
