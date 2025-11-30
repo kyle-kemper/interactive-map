@@ -138,9 +138,6 @@
                 categoryLayers[category].addLayer(marker);
                 allMarkers.push(marker);
             });
-
-            // Zoom to all markers initially
-            zoomToVisibleMarkers();
         }
     });
 
@@ -152,7 +149,6 @@
         } else {
             map.removeLayer(categoryLayers[category]);
         }
-        zoomToVisibleMarkers();
     }
 
     // Date filter function
@@ -176,25 +172,6 @@
                 categoryLayers[cat].addLayer(marker);
             }
         });
-
-        zoomToVisibleMarkers();
-    }
-
-    // Auto-zoom helper
-    function zoomToVisibleMarkers() {
-        const visibleMarkers = [];
-
-        for (const cat in categoryLayers) {
-            const layerGroup = categoryLayers[cat];
-            if (map.hasLayer(layerGroup)) {
-                layerGroup.eachLayer(marker => visibleMarkers.push(marker));
-            }
-        }
-
-        if (visibleMarkers.length > 0) {
-            const group = L.featureGroup(visibleMarkers);
-            map.fitBounds(group.getBounds().pad(0.2));
-        }
     }
 </script>
 
