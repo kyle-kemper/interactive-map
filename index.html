@@ -2,34 +2,44 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>CaniX Map Test</title>
+    <title>CaniX Interactive Map</title>
 
+    <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+    <!-- MarkerCluster -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css">
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+    <!-- PapaParse for CSV -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
     <style>
-        #map {
-            height: 600px;
-            width: 100%;
-        }
+        body { font-family: Arial, sans-serif; }
+        #map { height: 600px; width: 100%; }
+        #filters { padding: 10px; margin-bottom: 8px; background: #f4f4f4; }
+        .filter-item { margin-right: 15px; }
     </style>
 </head>
 <body>
 
-<h2>Leaflet U.S. Map Test CaniX</h2>
+<h2>CaniX Locations Map</h2>
+
+<div id="filters"><strong>Categories:</strong> <span id="filter-controls"></span></div>
 <div id="map"></div>
 
 <script>
-    // Create map centered on the US
+    // Initialize map
     const map = L.map('map').setView([39.5, -98.35], 4);
 
-    // Add tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19
     }).addTo(map);
 
-    // Custom marker icon function
-    function coloredIcon(color) {
+    // Custom Map Icons
+    function coloredIcon(color = "blue") {
         return new L.Icon({
             iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
             shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
@@ -40,26 +50,67 @@
         });
     }
 
-    // Categories → Colors
-    const categories = {
-        restaurants: coloredIcon("red"),
-        parks: coloredIcon("green"),
-        museums: coloredIcon("blue")
-    };
+    const categoryLayers = {}; // category → cluster group
+    const categoryIcons = {}; // store icons by category
 
-    // Example pins
-    const pins = [
-        { name: "Best BBQ", category: "restaurants", coords: [32.7767, -96.7970] },
-        { name: "Central Park", category: "parks", coords: [40.7851, -73.9683] },
-        { name: "Smithsonian", category: "museums", coords: [38.8977, -77.0365] }
-    ];
+    // Load CSV
+    Papa.parse("pins.csv", {
+        download: true,
+        header: true,
+        complete: function(results) {
+            const filterContainer = document.getElementById("filter-controls");
 
-    // Add pins to map
-    pins.forEach(pin => {
-        L.marker(pin.coords, { icon: categories[pin.category] })
-            .addTo(map)
-            .bindPopup(`<strong>${pin.name}</strong><br>Category: ${pin.category}`);
+            results.data.forEach(row => {
+                if (!row.latitude || !row.longitude) return;
+
+                const category = row.category || "Other";
+                const iconColor = row.iconColor || "blue";
+
+                // Create layer for category if new
+                if (!categoryLayers[category]) {
+                    categoryLayers[category] = L.markerClusterGroup().addTo(map);
+
+                    // Create icon for category if needed
+                    categoryIcons[category] = coloredIcon(iconColor);
+
+                    // Add checkbox filter UI
+                    const id = `check-${category}`;
+                    filterContainer.innerHTML += `
+                        <label class="filter-item">
+                            <input type="checkbox" id="${id}" checked
+                            onchange="toggleCategory('${category}')">
+                            ${category}
+                        </label>
+                    `;
+                }
+
+                // Make marker
+                const marker = L.marker(
+                    [parseFloat(row.latitude), parseFloat(row.longitude)],
+                    { icon: categoryIcons[category] }
+                );
+
+                const popup = `
+                    <strong>${row.name || "Unnamed"}</strong><br>
+                    ${row.description || ""}<br>
+                    <em>${category}</em>
+                `;
+
+                marker.bindPopup(popup);
+                categoryLayers[category].addLayer(marker);
+            });
+        }
     });
+
+    // Toggle checkbox filter function
+    function toggleCategory(category) {
+        const checkbox = document.getElementById(`check-${category}`);
+        if (checkbox.checked) {
+            map.addLayer(categoryLayers[category]);
+        } else {
+            map.removeLayer(categoryLayers[category]);
+        }
+    }
 </script>
 
 </body>
