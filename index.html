@@ -38,16 +38,16 @@
         maxZoom: 19
     }).addTo(map);
 
-    // Custom Map Icons: dog/paw/default
-    function customIcon(type = "dog") {
+    // Custom Map Icons
+    function customIcon(type = "default") {
         let url;
-        if (type === "dog") url = "https://i.ibb.co/9q8Y3fT/dog-icon.png";
-        else if (type === "paw") url = "https://i.ibb.co/5h3TZnM/paw-icon.png";
+        if (type === "dog") url = "icons/dog.png";
+        else if (type === "paw") url = "icons/paw.png";
         else url = "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png";
 
         return new L.Icon({
             iconUrl: url,
-            iconSize: [30, 30],     // adjust as needed
+            iconSize: [30, 30],
             iconAnchor: [15, 30],
             popupAnchor: [0, -30],
             shadowUrl: null
@@ -69,10 +69,10 @@
 
                 const category = row.category || "Other";
 
-                // Assign icon type
-                let iconType = "dog"; // default dog icon
-                if (category.toLowerCase() === "NACC RACE") iconType = "paw";
-                else if (category.toLowerCase() === "Canicross Race") iconType = "default";
+                // Assign icon based on category
+                let iconType = "default";
+                if (category === "NACC Race") iconType = "dog";
+                else if (category === "NACC Meet-up") iconType = "paw";
 
                 // Create layer for category if new
                 if (!categoryLayers[category]) {
