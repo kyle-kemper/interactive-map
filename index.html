@@ -20,7 +20,8 @@
         body { font-family: Arial, sans-serif; }
         #map { height: 600px; width: 100%; }
         #filters { padding: 10px; margin-bottom: 8px; background: #f4f4f4; }
-        .filter-item { margin-right: 15px; }
+        .filter-item { margin-right: 15px; display: inline-flex; align-items: center; }
+        .filter-item img { width: 20px; height: 20px; margin-left: 4px; margin-right: 4px; }
     </style>
 </head>
 <body>
@@ -104,12 +105,13 @@
                     // Create icon for category
                     categoryIcons[category] = customIcon(iconType);
 
-                    // Add checkbox filter UI
+                    // Add checkbox filter UI with icon
                     const id = `check-${category}`;
                     filterContainer.innerHTML += `
                         <label class="filter-item">
                             <input type="checkbox" id="${id}" checked
                             onchange="toggleCategory('${category}')">
+                            <img src="${customIcon(iconType).options.iconUrl}">
                             ${category}
                         </label>
                     `;
