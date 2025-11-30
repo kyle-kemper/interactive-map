@@ -1,5 +1,7 @@
 name,category,iconColor,latitude,longitude,description
-Cool Canicross Race,Event,red,44.96,-93.27,"September race!"
-Epic Trail,Parks,green,40.7851,-73.9683,"Good for dog training"
-Vet Clinic,Vet,orange,39.7392,-104.9903,"Sports vet support"
-Training Club,Club,blue,34.0522,-118.2437,"Weekly group runs"
+Cool Canicross Race,NACC RACE,red,44.96,-93.27,sample text
+sample meet up,NACC Meet-Up,green,40.7851,-73.9683,sample text
+Capitolina Dryland,Canicross Race,orange,34.2851647,-85.21773661,ISDRA Race
+Sample dog friendly race,Dog-Friendly Race,blue,39,-104,sample text
+Race Around Red Top,NACC RACE,red,34.13969543,-84.70049697,4th annual
+Steeplechase Stampede,NACC RACE,red,33.67359615,-83.94333062,in november
