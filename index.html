@@ -47,11 +47,15 @@
     }).addTo(map);
 
     // Custom Map Icons
-    function customIcon(type = "default") {
+    function customIcon(filename = "default") {
         let url;
-        if (type === "nacclogo") url = "icons/nacclog.png";
-        else if (type === "paw") url = "icons/paw.png";
-        else url = "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png";
+        switch(filename) {
+            case "nacclogo": url = "icons/nacclogo.png"; break;
+            case "naccmeetup": url = "icons/naccmeetup.png"; break;
+            case "crace": url = "icons/crace.png"; break;
+            case "dograce": url = "icons/dograce.png"; break;
+            default: url = "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png";
+        }
 
         return new L.Icon({
             iconUrl: url,
@@ -72,6 +76,14 @@
         return isNaN(d) ? null : d;
     }
 
+    // Map category → icon filename (case-sensitive)
+    const iconMapping = {
+        "NACC RACE": "nacclogo",
+        "NACC Meet-Up": "naccmeetup",
+        "Canicross Race": "crace",
+        "Dog-Friendly Race": "dograce"
+    };
+
     // Load CSV
     Papa.parse("pins.csv", {
         download: true,
@@ -83,11 +95,7 @@
                 if (!row.latitude || !row.longitude) return;
 
                 const category = row.category || "Other";
-
-                // Assign icon based on exact category names (case-sensitive)
-                let iconType = "default";
-                if (category === "NACC RACE") iconType = "nacclogo";
-                else if (category === "NACC Meet-Up") iconType = "paw";
+                const iconType = iconMapping[category] || "default";
 
                 // Create layer for category if new
                 if (!categoryLayers[category]) {
