@@ -49,7 +49,7 @@
     // Custom Map Icons
     function customIcon(type = "default") {
         let url;
-        if (type === "dog") url = "icons/dog.png";
+        if (type === "nacclogo") url = "icons/nacclog.png";
         else if (type === "paw") url = "icons/paw.png";
         else url = "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png";
 
@@ -86,7 +86,7 @@
 
                 // Assign icon based on exact category names (case-sensitive)
                 let iconType = "default";
-                if (category === "NACC RACE") iconType = "dog";
+                if (category === "NACC RACE") iconType = "nacclogo";
                 else if (category === "NACC Meet-Up") iconType = "paw";
 
                 // Create layer for category if new
