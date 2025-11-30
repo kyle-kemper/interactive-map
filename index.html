@@ -38,20 +38,24 @@
         maxZoom: 19
     }).addTo(map);
 
-    // Custom Map Icons
-    function coloredIcon(color = "blue") {
+    // Custom Map Icons: dog/paw/default
+    function customIcon(type = "dog") {
+        let url;
+        if (type === "dog") url = "https://i.ibb.co/9q8Y3fT/dog-icon.png";
+        else if (type === "paw") url = "https://i.ibb.co/5h3TZnM/paw-icon.png";
+        else url = "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png";
+
         return new L.Icon({
-            iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-            shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
+            iconUrl: url,
+            iconSize: [30, 30],     // adjust as needed
+            iconAnchor: [15, 30],
+            popupAnchor: [0, -30],
+            shadowUrl: null
         });
     }
 
     const categoryLayers = {}; // category → cluster group
-    const categoryIcons = {}; // store icons by category
+    const categoryIcons = {};  // store icons by category
 
     // Load CSV
     Papa.parse("pins.csv", {
@@ -64,14 +68,18 @@
                 if (!row.latitude || !row.longitude) return;
 
                 const category = row.category || "Other";
-                const iconColor = row.iconColor || "blue";
+
+                // Assign icon type
+                let iconType = "dog"; // default dog icon
+                if (category.toLowerCase() === "NACC RACE") iconType = "paw";
+                else if (category.toLowerCase() === "Canicross Race") iconType = "default";
 
                 // Create layer for category if new
                 if (!categoryLayers[category]) {
                     categoryLayers[category] = L.markerClusterGroup().addTo(map);
 
-                    // Create icon for category if needed
-                    categoryIcons[category] = coloredIcon(iconColor);
+                    // Create icon for category
+                    categoryIcons[category] = customIcon(iconType);
 
                     // Add checkbox filter UI
                     const id = `check-${category}`;
