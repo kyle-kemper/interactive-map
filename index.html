@@ -17,23 +17,29 @@
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
     <style>
-        body { font-family: Arial, sans-serif; }
-        #map { height: 600px; width: 100%; }
-        #filters { padding: 10px; margin-bottom: 8px; background: #f4f4f4; }
-        .filter-item { margin-right: 15px; }
+        body { font-family: Arial, sans-serif; margin:0; padding:0; display:flex; height:100vh; }
+        #sidebar { width: 300px; overflow-y:auto; padding:10px; background:#f4f4f4; }
+        #map { flex:1; }
+        .filter-item { margin-right: 10px; }
+        .event-item { padding:5px; border-bottom:1px solid #ccc; cursor:pointer; }
+        .event-item:hover { background:#ddd; }
     </style>
 </head>
 <body>
 
-<h2>CaniX Locations Map</h2>
-
-<div id="filters">
-    <strong>Categories:</strong> <span id="filter-controls"></span>
-    <br><br>
-    <strong>Filter by Date:</strong>
-    <input type="date" id="startDate">
-    <input type="date" id="endDate">
-    <button onclick="applyDateFilter()">Apply</button>
+<div id="sidebar">
+    <h3>Filters</h3>
+    <div>
+        <strong>Categories:</strong> <span id="filter-controls"></span>
+    </div>
+    <div style="margin-top:10px;">
+        <strong>Filter by Date:</strong><br>
+        <input type="date" id="startDate">
+        <input type="date" id="endDate">
+        <button onclick="applyDateFilter()">Apply</button>
+    </div>
+    <h3 style="margin-top:20px;">Events</h3>
+    <div id="event-list"></div>
 </div>
 
 <div id="map"></div>
@@ -46,8 +52,8 @@
         maxZoom: 19
     }).addTo(map);
 
-    // Custom Map Icons
-    function coloredIcon(color = "blue") {
+    // Custom icon
+    function coloredIcon(color="blue") {
         return new L.Icon({
             iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
             shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
@@ -68,6 +74,34 @@
         return isNaN(d) ? null : d;
     }
 
+    function updateEventList() {
+        const eventList = document.getElementById("event-list");
+        eventList.innerHTML = "";
+
+        // Sort markers by date
+        const sorted = allMarkers.slice().sort((a,b) => {
+            if (!a.eventDate) return 1;
+            if (!b.eventDate) return -1;
+            return a.eventDate - b.eventDate;
+        });
+
+        sorted.forEach(marker => {
+            // Only show visible markers
+            const cat = marker.category;
+            const checkbox = document.getElementById(`check-${cat}`);
+            if (!checkbox.checked) return;
+
+            const div = document.createElement("div");
+            div.className = "event-item";
+            div.innerHTML = `<strong>${marker.options.title || "Unnamed"}</strong><br>${marker.eventDate ? marker.eventDate.toDateString() : ""}`;
+            div.onclick = () => {
+                map.setView(marker.getLatLng(), 13);
+                marker.openPopup();
+            };
+            eventList.appendChild(div);
+        });
+    }
+
     // Load CSV
     Papa.parse("pins.csv", {
         download: true,
@@ -82,74 +116,4 @@
                 const iconColor = row.iconColor || "blue";
                 const eventDate = parseDate(row.eventDate);
 
-                if (!categoryLayers[category]) {
-                    categoryLayers[category] = L.markerClusterGroup().addTo(map);
-                    categoryIcons[category] = coloredIcon(iconColor);
-
-                    const id = `check-${category}`;
-                    filterContainer.innerHTML += `
-                        <label class="filter-item">
-                            <input type="checkbox" id="${id}" checked 
-                            onchange="toggleCategory('${category}')">
-                            ${category}
-                        </label>`;
-                }
-
-                const marker = L.marker(
-                    [parseFloat(row.latitude), parseFloat(row.longitude)],
-                    { icon: categoryIcons[category] }
-                );
-
-                marker.category = category;
-                marker.eventDate = eventDate;
-
-                const popup = `
-                    <strong>${row.name || "Unnamed"}</strong><br>
-                    ${row.description || ""}<br>
-                    <em>${category}</em><br>
-                    ${eventDate ? `<strong>Date:</strong> ${eventDate.toDateString()}` : ""}
-                `;
-
-                marker.bindPopup(popup);
-                categoryLayers[category].addLayer(marker);
-                allMarkers.push(marker);
-            });
-        }
-    });
-
-    // Toggle categories
-    function toggleCategory(category) {
-        const checkbox = document.getElementById(`check-${category}`);
-        if (checkbox.checked) {
-            map.addLayer(categoryLayers[category]);
-        } else {
-            map.removeLayer(categoryLayers[category]);
-        }
-    }
-
-    // Date filter
-    function applyDateFilter() {
-        const start = parseDate(document.getElementById("startDate").value);
-        const end = parseDate(document.getElementById("endDate").value);
-
-        for (const cat in categoryLayers) {
-            categoryLayers[cat].clearLayers();
-        }
-
-        allMarkers.forEach(marker => {
-            const cat = marker.category;
-            const checkbox = document.getElementById(`check-${cat}`);
-            let ok = true;
-
-            if (start && marker.eventDate && marker.eventDate < start) ok = false;
-            if (end && marker.eventDate && marker.eventDate > end) ok = false;
-
-            if (ok && checkbox.checked) {
-                categoryLayers[cat].addLayer(marker);
-            }
-        });
-    }
-</script>
-
-</body>
-</html>
+                if (!categoryLayer
